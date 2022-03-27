@@ -119,7 +119,9 @@ def printBossMenu():
 
 def printShopMenu():
     print("What are you buying?")
-    print("A - Item1\nS-Item2\nD - Item3\nF - Move on")
+    #print("A - Item1\nS-Item2\nD - Item3\nF - Move on")
+    print("A - Item1\nS-Item2\nF - Move on")
+
 
 def startButton():
     new = Tk()
@@ -246,7 +248,6 @@ def inputButton(m):
             player.Bag += coins
         elif int(room_type[r]) in range(9, 10):
             print("This room has a Shop!")
-            print("You have ", player.Bag, " coins!")
             shopInput = ""
             while shopInput != 'f' and shopInput != 'F':
                 printShopMenu()
@@ -255,6 +256,7 @@ def inputButton(m):
                 #item3 = roomObj.item3
                 print("HP: ", item1.upgrade, "Cost: ", item1.cost)
                 print("Sword upgrade: ", item2.upgrade, "Cost: ", item2.cost)
+                print("You have ", player.Bag, " coins!")
                 shopInput = input()
                 if(shopInput == 'A' or shopInput == 'a'):
                     if(player.Bag == 0):
@@ -267,7 +269,7 @@ def inputButton(m):
                             player.HP += int(item1.upgrade)
                             player.Bag -= int(item1.cost)
 
-                elif(shopInput == 'D' or shopInput == 'd'):
+                elif(shopInput == 'S' or shopInput == 's'):
                     if(player.Bag <= 0):
                         print("Not enough coins, stranger!")
                     else:
@@ -283,7 +285,7 @@ def inputButton(m):
             print("This room is empty!")
             print("Moving on...")
         r += 1
-    print("CONGRADULATIONS! You have completed Rynth's Dungeon!")
+    print("CONGRATULATIONS! You have completed Rynth's Dungeon!")
 #def testButton():
 #    print("This is a test. Stop here pls!")
 
