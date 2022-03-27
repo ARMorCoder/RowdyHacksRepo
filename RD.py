@@ -2,19 +2,14 @@ from tkinter  import *
 import math
 import random
 
-
 random.seed()
-
-#canvas1.create_text(250, 250, text = "Game start", fill = "white", font = ('Helvetica 15 bold'))
-
 roomAmount = 0
     
 class PlayerClass:
     #Level Player starts out a
-    HP = 25
+    HP = 150
     AP = 10
-    DP = 2
-    Coins = 0
+    Bag = 0
     EXP = 0
 
 class BossClass:
@@ -35,20 +30,21 @@ class ItemClass:
     #0 - Nothing, 1 - HP, 2 - AP 3 - DP
     #cost is the amount the item is
     #upgrade is the amount added to the player when dropped
-    def __init__(self, item, cost, upgrade):
-        self.item = item
+    def __init__(self, stock, cost, upgrade):
+        self.stock = stock
         self.cost = cost
         self.upgrade = upgrade
     
     
-
+#For the player to buy and upgrade their sword and health
 class ShopClass:
-    def __init__(self, item1, cost1, upgrade1, item2, cost2, upgrade2, item3, cost3, upgrade3):
-        self.item1 = ItemClass(item1, cost1, upgrade1)
-        self.item2 = ItemClass(item2, cost2, upgrade2)
-        self.item3 = ItemClass(item3, cost3, upgrade3)
+    def __init__(self,stock1, cost1, upgrade1, stock2, cost2, upgrade2):#, stock3, cost3, upgrade3):
+        self.item1 = ItemClass(stock1, cost1, upgrade1)
+        self.item2 = ItemClass(stock2, cost2, upgrade2)
+        #self.item3 = ItemClass(stock3, cost3, upgrade3)
 
-    
+class EmptyRoom:
+    x = -1
 
 def createRoom(typeR):
     if typeR in range(0, 5):
@@ -56,32 +52,75 @@ def createRoom(typeR):
         bossAP = random.randrange(5, 25)
         bossXP = 100 - bossHP
         bossObj = BossClass(bossHP, bossAP, bossXP)
-        print("Boss created")
+        #print("This boss has HP: ", int(bossObj.HP))
+        #print("Boss created")
         return bossObj
     elif typeR in range(6, 8):
         coinNum = random.randrange(15, 50)
         coinObj = TreasureClass(coinNum)
-        print("Treasure created")
+        #print("Treasure created")
         return coinObj
     elif typeR in range(9, 10):
-        itemList = [0] * 3
         costList = [0] * 3
         upgradeList = [0] * 3
         for i in range(3):
-            itemList[i] = random.randrange(0, 2)
             costList[i] = random.randrange(5, 15)
             upgradeList[i] = random.randrange(5, 10)
-        shopObj = ShopClass(itemList[0], costList[0], upgradeList[0], itemList[1], costList[1], upgradeList[1], itemList[2], costList[2], upgradeList[2])
-        print("Shop created")
+        shopObj = ShopClass(1, costList[0], upgradeList[0], 1, costList[1], upgradeList[1])#, 1, costList[2], upgradeList[2])
+        #print("Shop created")
         return shopObj
     else:
-        print("Empty room created") 
+        emptyObj = EmptyRoom()
+        return emptyObj 
         
         
 class RoomClass:
     def __init__(self, typeNum):
         self.roomType = int(typeNum)
+
+def BossAttack(m):
+    choiceAP = 0
+    if(m == 1):
+        choiceAP = random.randrange(0,10)
+        if choiceAP in range(0,4):
+            return 0
+        elif choiceAP in range(5, 8):
+            return 1
+        else:
+            return 2
+    else:
+        choiceAP = random.randrange(0,10)
+        if choiceAP in range(0,6):
+            return 0
+        elif choiceAP in range(7, 9):
+            return 1
+        else:
+            return 2
+
+def yourAttack():
+    choiceAP = random.randrange(0, 10)
+    if choiceAP in range(0, 5):
+        return 0
+    elif choiceAP in range(6, 8):
+        return 1
+    else:
+        return 2
         
+def printPlayer(player):
+    print("Player Stats:\nHP:", player.HP)
+    print("AP: ", player.AP)
+
+def printBoss(boss):
+    print("Boss HP: ", boss.HP)
+
+def printBossMenu():
+    print("Choose an Option: ")
+    print("A - Attack\nD-Dodge\nE-Escape")
+
+def printShopMenu():
+    print("What are you buying?")
+    print("A - Item1\nS-Item2\nD - Item3\nF - Move on")
+
 def startButton():
     new = Tk()
     amountVar = StringVar()
@@ -117,60 +156,136 @@ def inputButton(m):
     myRoom = RoomClass(0)
     room_type = [myRoom.roomType] * roomAmount
     room_list = [myObj] * roomAmount
-    print(len(room_type))
+    #print(len(room_type))
+    levelCap = 100
     g = 0
     while g < roomAmount:
         room_type[g] = random.randrange(0,11)
         g += 1
 
-    print(room_type)
+    #print(room_type)
     i = 0
-    for n in room_type:
-        roomObj = createRoom(int(n))
-        room_list[i] = roomObj
-    roomWindow = Tk()
-    r = 0
-    while r < roomAmount:
-        thisRoom = room_list[r]
-        print("This room is type ",room_type[r])
+    #for n in room_type:
+     #   roomObj = createRoom(int(n))
+      #  room_list[i] = roomObj
 
+    #roomWindow = Tk()
+    player = PlayerClass()
+    attackRoll = 0
+    dodgeChance = 0
+    r = 0
+    #print(room_list)
+    while r < roomAmount:
+        #thisRoom = room_list[r]
+        roomObj = createRoom(int(room_type[r]))
+        #print("This room is type ",room_type[r])
+        
         if int(room_type[r]) in range(0, 5):
-            print("This room is Boss!")
-            roomWindow.geometry("500x500")
-            canvasWin = Canvas(roomWindow, width = 500, height = 500, bg = "black")
-            bWin = Button(canvasWin, text = "Next", command = testButton)
-            bWin.place(x = 250, y = 250)
-            canvasWin.pack()
-            roomWindow.mainloop()
+            Health = int(roomObj.HP)
+            Attack = int(roomObj.AP)
+            XP = int(roomObj.EXP)
+            print("This room has a Boss!")
+            while Health > 0:
+                printBossMenu()
+                printPlayer(player)
+                printBoss(roomObj)
+                userInput = input()
+                if(userInput == 'A' or userInput == 'a'):
+                    attackRoll = yourAttack()
+                    dodgeRoll = 0
+                    if attackRoll == 0:
+                        print("You attacked and hit!");
+                        Health = Health - random.randrange(3, int(player.AP))
+                        roomObj.HP = Health
+                    elif attackRoll == 1:
+                        print("You did a critical attack!")
+                        Health -= int(player.AP)
+                        roomObj.HP = Health
+                    else:
+                        print("You missed!")
+                elif(userInput == 'D' or userInput == 'd'):
+                    print("You try to dodge the attack!")
+                    dodgeChance = 1
+                else:
+                    print("You have left the dungeons in fear...")
+                    exit()
+
+                print("The Boss attacked!")
+                attackRoll = BossAttack(dodgeChance)
+                if attackRoll == 0:
+                    print("Boss hit!")
+                    loss = random.randrange(1, Attack)
+                    player.HP -= loss
+                    dodgeRoll = 0
+                    if player.HP <= 0:
+                        print("You have died. GAME OVER!")
+                        exit()
+                elif attackRoll == 1:
+                    print("Boss missed!")
+                    dodgeRoll = 0
+                else:
+                    print("Boss has done critical hit!")
+                    player.HP -= Attack
+                    if player.HP <= 0:
+                        print("You have died. GAME OVER!")
+                        exit()
+                    dodgeRoll = 0
+            
+            print("The boss is down and you gained ", XP,"! You move on...")
+            player.EXP += XP
+            if(player.EXP > levelCap):
+                print("Level up!")
+                player.AP += 1
+                levelCap += levelCap
+            
+
         elif int(room_type[r]) in range(6, 8):
-            print("This room is treasure!")
-            roomWindow.geometry("500x500")
-            canvasWin = Canvas(roomWindow, width = 500, height = 500, bg = "black")
-            bWin = Button(canvasWin, text = "Next", command = testButton)
-            bWin.place(x = 250, y = 250)
-            canvasWin.pack()
-            roomWindow.mainloop()
+            print("This room has Treasure!")
+            coins = int(roomObj.coins)
+            print("You open the treasure and find", coins, "!")
+            player.Bag += coins
         elif int(room_type[r]) in range(9, 10):
-            print("This room is shop!")
-            roomWindow.geometry("500x500")
-            canvasWin = Canvas(roomWindow, width = 500, height = 500, bg = "black")
-            bWin = Button(canvasWin, text = "Next", command = testButton)
-            bWin.place(x = 250, y = 250)
-            print("This room is shop!")
-            canvasWin.pack()
+            print("This room has a Shop!")
+            print("You have ", player.Bag, " coins!")
+            shopInput = ""
+            while shopInput != 'f' and shopInput != 'F':
+                printShopMenu()
+                item1 = roomObj.item1
+                item2 = roomObj.item2
+                #item3 = roomObj.item3
+                print("HP: ", item1.upgrade, "Cost: ", item1.cost)
+                print("Sword upgrade: ", item2.upgrade, "Cost: ", item2.cost)
+                shopInput = input()
+                if(shopInput == 'A' or shopInput == 'a'):
+                    if(player.Bag == 0):
+                        print("Not enough coins, stranger!")
+                    else:
+                        if(item1.stock == 0):
+                            print("OUT OF STOCK!")
+                        else:
+                            item1.stock = 0
+                            player.HP += int(item1.upgrade)
+                            player.Bag -= int(item1.cost)
+
+                elif(shopInput == 'D' or shopInput == 'd'):
+                    if(player.Bag <= 0):
+                        print("Not enough coins, stranger!")
+                    else:
+                        if(item2.stock == 0):
+                            print("OUT OF STOCK")
+                        else:
+                            item2.stock = 0
+                            player.AP += int(item2.upgrade)
+                            player.Bag -= int(item2.cost)
+            
+            print("Have a great day stranger!")
         else:
             print("This room is empty!")
-            roomWindow.geometry("500x500")
-            canvasWin = Canvas(roomWindow, width = 500, height = 500, bg = "black")
-            bWin = Button(canvasWin, text = "Next", command = testButton)
-            bWin.place(x = 250, y = 250)
-            print("This room is empty!")
-            canvasWin.pack()
-            roomWindow.mainloop()
+            print("Moving on...")
         r += 1
-    
-def testButton():
-    print("This is a test. Stop here pls!")
+    print("CONGRADULATIONS! You have completed Rynth's Dungeon!")
+#def testButton():
+#    print("This is a test. Stop here pls!")
 
 def endButton():
     exit()
